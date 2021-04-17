@@ -78,8 +78,8 @@ const Edit = () => {
         id: router.query.id
       }
       const data = await updateBrand(brand)
-      if (data) {
-        console.log('sem erro')
+      if (data && !data.errors) {
+        router.push('/brands')
       }
     }
   })

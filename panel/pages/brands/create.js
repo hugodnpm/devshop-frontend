@@ -60,7 +60,7 @@ const CreateBrand = () => {
     },
     validationSchema: BrandSchema,
     onSubmit: async values => {
-      await createBrand(values)
+      const data = await createBrand(values)
       if (data && !data.errors) {
         router.push('/brands')
       }
