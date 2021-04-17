@@ -1,7 +1,8 @@
 import React from 'react'
+import * as Yup from 'yup'
 import Layout from '../../components/Layout'
 import Title from '../../components/Title'
-import { useQuery, useMutation } from '../../lib/graphql'
+import { useQuery, useMutation, fetcher } from '../../lib/graphql'
 import { useFormik } from 'formik'
 import { useRouter } from 'next/router'
 import Button from '../../components/Button'
@@ -33,6 +34,42 @@ const GET_ALL_CATEGORIES = `
       }
     }
     `
+const ProductSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(3, 'Por favor, informe pelo menos um nome com 3 caracteres')
+    .required('Campo obrigatório!!'),
+  slug: Yup.string()
+    .min(3, 'Por favor, informe pelo menos um slug com 3 caracteres')
+    .required('Campo obrigatório!!')
+    .test(
+      'is-unique',
+      'Por favor, utilize outro slug. Este já está e uso',
+      async value => {
+        const ret = await fetcher(
+          JSON.stringify({
+            query: `
+            query{
+              getProductBySlug(slug:"${value}"){
+                id
+              }
+            }
+            `
+          })
+        )
+        if (ret.errors) {
+          return true
+        }
+        return false
+      }
+    ),
+  description: Yup.string()
+    .min(20, 'Por favor, informe pelo menos um descrição com 20 caracteres')
+    .required('Informe uma descrição'),
+
+  category: Yup.string()
+    .min(1, 'Por favor, selecione uma categoria.')
+    .required('Por favor, selecione uma categoria.')
+})
 const Index = () => {
   const router = useRouter()
   const [data, createProduct] = useMutation(CREATE_PRODUCT)
@@ -45,6 +82,7 @@ const Index = () => {
       description: '',
       category: ''
     },
+    validationSchema: ProductSchema,
     onSubmit: async values => {
       const data = await createProduct(values)
       if (data && !data.errors) {
@@ -84,6 +122,7 @@ const Index = () => {
                     value={form.values.name}
                     onChange={form.handleChange}
                     name='name'
+                    errorMessage={form.errors.name}
                   />
                   <Input
                     label='Slug do Produto'
@@ -91,6 +130,7 @@ const Index = () => {
                     value={form.values.slug}
                     onChange={form.handleChange}
                     name='slug'
+                    errorMessage={form.errors.slug}
                   />
                   <Input
                     label='Descrição do Produto'
@@ -98,6 +138,7 @@ const Index = () => {
                     value={form.values.description}
                     onChange={form.handleChange}
                     name='description'
+                    errorMessage={form.errors.description}
                   />
                   <Select
                     label='Selecione a sua categoria'
@@ -105,6 +146,8 @@ const Index = () => {
                     onChange={form.handleChange}
                     value={form.values.category}
                     options={options}
+                    errorMessage={form.errors.category}
+                    initial={{ id: '', label: 'Selecione...' }}
                   />
                   <Button>Criar Produto</Button>
                 </div>

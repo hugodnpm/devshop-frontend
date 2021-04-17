@@ -6,7 +6,8 @@ const Input = ({
   label = '',
   value,
   onChange,
-  name
+  name,
+  errorMessage = ''
 }) => {
   return (
     <div className='p-6 '>
@@ -34,6 +35,9 @@ const Input = ({
             />
           </p>
         </div>
+        {errorMessage && (
+          <p className='text-red-500 pt-2 text-xs italic'>{errorMessage}</p>
+        )}
       </div>
     </div>
   )

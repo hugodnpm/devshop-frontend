@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
+import * as Yup from 'yup'
 import { useRouter } from 'next/router'
-import { useMutation, useQuery } from '../../../lib/graphql'
+import { useMutation, useQuery, fetcher } from '../../../lib/graphql'
 import { useFormik } from 'formik'
 import Layout from '../../../components/Layout'
 import Title from '../../../components/Title'
@@ -8,7 +9,7 @@ import Input from '../../../components/Input'
 import Button from '../../../components/Button'
 import Select from '../../../components/Select'
 import Alert from '../../../components/Alert'
-
+let id = ''
 const UPDATEPRODUCT = `
 mutation updateProduct($id: String!, $name: String!, $slug: String!, $description: String!, $category: boolean!){
     updateProduct (input: {
@@ -34,8 +35,49 @@ const GET_ALL_CATEGORIES = `
       }
     }
     `
+
+const ProductSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(3, 'Por favor, informe pelo menos um nome com 3 caracteres')
+    .required('Campo obrigatório!!'),
+  slug: Yup.string()
+    .min(3, 'Por favor, informe pelo menos um slug com 3 caracteres')
+    .required('Campo obrigatório!!')
+    .test(
+      'is-unique',
+      'Por favor, utilize outro slug. Este já está e uso',
+      async value => {
+        const ret = await fetcher(
+          JSON.stringify({
+            query: `
+                query{
+                  getProductBySlug(slug:"${value}"){
+                    id
+                  }
+                }
+                `
+          })
+        )
+        if (ret.errors) {
+          return true
+        }
+        if (ret.data.getProductBySlug.id === id) {
+          return true
+        }
+        return false
+      }
+    ),
+  description: Yup.string()
+    .min(20, 'Por favor, informe pelo menos um descrição com 20 caracteres')
+    .required('Informe uma descrição'),
+
+  category: Yup.string()
+    .min(1, 'Por favor, selecione uma categoria.')
+    .required('Por favor, selecione uma categoria.')
+})
 const Edit = () => {
   const router = useRouter()
+  id = router.query.id
   const { data } = useQuery(`
   query{
     getProductById(id:"${router.query.id}"){
@@ -55,6 +97,7 @@ const Edit = () => {
       description: '',
       category: ''
     },
+    validationSchema: ProductSchema,
     onSubmit: async values => {
       const product = {
         ...values,
@@ -109,6 +152,7 @@ const Edit = () => {
               value={form.values.name}
               onChange={form.handleChange}
               name='name'
+              errorMessage={form.errors.name}
             />
             <Input
               label='Slug do Produto'
@@ -116,6 +160,7 @@ const Edit = () => {
               value={form.values.slug}
               onChange={form.handleChange}
               name='slug'
+              errorMessage={form.errors.slug}
             />
             <Input
               label='Descrição do Produto'
@@ -123,6 +168,7 @@ const Edit = () => {
               value={form.values.description}
               onChange={form.handleChange}
               name='description'
+              errorMessage={form.errors.description}
             />
             <Select
               label='Selecione a sua categoria'
@@ -130,6 +176,8 @@ const Edit = () => {
               onChange={form.handleChange}
               value={form.values.category}
               options={options}
+              errorMessage={form.errors.category}
+              initial={{ id: '', label: 'Selecione...' }}
             />
             <Button>Salvar Produto</Button>
           </div>

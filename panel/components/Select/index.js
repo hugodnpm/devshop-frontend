@@ -6,7 +6,9 @@ const Select = ({
   value,
   onChange,
   name,
-  options = []
+  options = [],
+  initial = {},
+  errorMessage = ''
 }) => {
   return (
     <div className='p-6 '>
@@ -30,12 +32,13 @@ const Select = ({
               name={name}
               className='py-4 px-4 text-gray-900 outline-none block h-full w-full bg-transparent'
             >
+              {initial && <option value={initial.id}>{initial.label}</option>}
               {options.map(opt => {
                 return (
                   <option
                     key={opt.id}
                     value={opt.id}
-                    checked={value === opt.id}
+                    selected={value === opt.id}
                   >
                     {opt.label}
                   </option>
@@ -43,6 +46,9 @@ const Select = ({
               })}
             </select>
           </p>
+          {errorMessage && (
+            <p className='text-red-500 pt-2 text-xs italic'>{errorMessage}</p>
+          )}
         </div>
       </div>
     </div>

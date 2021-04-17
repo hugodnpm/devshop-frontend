@@ -33,10 +33,10 @@ const useMutation = query => {
     try {
       const returnedData = await fetcher(JSON.stringify(mutation))
       setData(returnedData)
-      returnedData
+      return returnedData
     } catch (err) {}
   }
   return [data, mutate]
 }
 
-export { useQuery, useMutation }
+export { useQuery, useMutation, fetcher }
