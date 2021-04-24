@@ -95,7 +95,6 @@ const Edit = () => {
     <Layout>
       <div className='container mx-auto px-6 py-8'>
         <Title>Editar Marca</Title>
-        <div className='mt-8'>{JSON.stringify(data)}</div>
 
         <div className='flex flex-col mt-8'>
           <div className='-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8'>
