@@ -8,15 +8,22 @@ import Title from '../../components/Title'
 import { useMutation, useQuery } from '../../lib/graphql'
 
 const DELETE_BRAND = `
+mutation removeBrandLogo($id: String!){
+  removeBrandLogo(id:$id)
+}`
+
+const REMOVE_BRAND_LOGO = `
 mutation deletebrand($id: String!){
   deleteBrand(id:$id)
 }`
+
 const GET_ALL_BRANDS = `
     query{
       getAllBrand{
         id
         name
         slug
+        logo
       }
     }
     `
@@ -25,7 +32,12 @@ const Index = () => {
   const { data, mutate } = useQuery(GET_ALL_BRANDS)
 
   const [deleteData, deleteBrand] = useMutation(DELETE_BRAND)
+  const [removeBrandLogoData, deleteBrandLogo] = useMutation(REMOVE_BRAND_LOGO)
   const remove = id => async () => {
+    await deleteBrandLogo({ id })
+    mutate()
+  }
+  const removeBrandLogo = id => async () => {
     await deleteBrand({ id })
     mutate()
   }
@@ -61,6 +73,15 @@ const Index = () => {
                         return (
                           <Table.Tr key={item.id}>
                             <Table.Td>
+                              {item.logo && (
+                                <img
+                                  src={item.logo}
+                                  alt={item.name}
+                                  className='h-20'
+                                />
+                              )}
+                            </Table.Td>
+                            <Table.Td>
                               <div className='flex items-center'>
                                 <div>
                                   <div className='text-sm leading-5 font-medium text-gray-900'>
@@ -74,6 +95,18 @@ const Index = () => {
                             </Table.Td>
 
                             <Table.Td>
+                              {item.logo && (
+                                <>
+                                  <a
+                                    href='#'
+                                    className='text-indigo-600 hover:text-indigo-900'
+                                    onClick={removeBrandLogo(item.id)}
+                                  >
+                                    Remove Logo
+                                  </a>{' '}
+                                  |
+                                </>
+                              )}
                               <Link href={`/brands/${item.id}/upload`}>
                                 <a className='text-indigo-600 hover:text-indigo-900'>
                                   Upload Logo

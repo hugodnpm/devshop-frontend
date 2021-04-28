@@ -72,6 +72,7 @@ const Upload = () => {
               type='file'
               name='file'
               onChange={evt => {
+                console.log(evt.currentTarget.files[0])
                 form.setFieldValue('file', evt.currentTarget.files[0])
               }}
             />
